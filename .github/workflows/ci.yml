@@ -44,13 +44,20 @@ jobs:
         run: flutter pub get
 
       - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed lib test
+        run: dart format --output=none --set-exit-if-changed lib test packages
 
       - name: Analyze
         run: flutter analyze
 
       - name: Test
         run: flutter test --reporter expanded
+
+      - name: Verify domain package
+        working-directory: packages/holdcourse_domain
+        run: |
+          dart pub get
+          dart analyze
+          dart test --reporter expanded
 
       - name: Build debug APK
         run: flutter build apk --debug
