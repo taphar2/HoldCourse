@@ -1,0 +1,11 @@
+name: holdcourse_domain
+description: Pure Dart attendance and CAT rules for HoldCourse. Contains no Flutter imports so it can be tested on any Dart runtime.
+version: 0.1.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.14.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.0

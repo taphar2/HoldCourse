@@ -8,6 +8,7 @@
 build/
 coverage/
 doc/api/
+packages/*/pubspec.lock
 
 # IDE
 .idea/
