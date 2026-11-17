@@ -43,6 +43,10 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Install domain package dependencies
+        working-directory: packages/holdcourse_domain
+        run: dart pub get
+
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed lib test packages
 
@@ -55,7 +59,6 @@ jobs:
       - name: Verify domain package
         working-directory: packages/holdcourse_domain
         run: |
-          dart pub get
           dart analyze
           dart test --reporter expanded
 
