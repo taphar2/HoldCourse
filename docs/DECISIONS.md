@@ -6,6 +6,23 @@ the decision wins and the line is quoted here.
 
 ---
 
+## 2026-11-17 — Flutter runs locally on the phone
+
+**Decided by:** project owner. Supersedes "Tooling on the phone" below, where
+it says Flutter cannot be installed.
+
+The x64-only limit applies to Flutter's prebuilt Linux SDK tarball, not to
+Flutter itself. Flutter 3.50.0 was assembled from its source tarball in
+`/root/tools/flutter`, running on the arm64 Dart SDK with the arm64 engine
+artifacts pinned to the 3.50.0 engine.
+
+- `flutter analyze`, `flutter test` and `dart format` now run on the phone.
+- APK builds stay on GitHub Actions: Android's `aapt2` and `zipalign` are
+  x86_64-only binaries, no arm64 builds exist, and `binfmt_misc` is not
+  writable, so a local Gradle build is not dependable.
+
+---
+
 ## 2026-11-16 — Mode 1 attendance and CAT rules
 
 **Decided by:** project owner. These are the rules the attendance and CAT

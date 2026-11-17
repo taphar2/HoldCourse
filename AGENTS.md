@@ -16,12 +16,15 @@ where it contradicts a spec.
 ## Environment
 
 - Development happens on an arm64 Android phone.
-- **Flutter is not installed locally** and cannot be: the Linux SDK is
-  x64-only. Use `dart` (arm64, at `/root/tools/dart-sdk/bin/dart`) for
-  `dart format` and pure-Dart tests.
-- `flutter analyze`, `flutter test` and `flutter build apk --debug` run on
-  GitHub Actions for every push (`.github/workflows/ci.yml`, Flutter pinned to
-  3.50.0). The debug APK is uploaded as the `app-debug-apk` artifact.
+- Flutter 3.50.0 **is installed locally** at `/root/tools/flutter`: the
+  framework comes from the 3.50.0 source tarball with the engine version
+  pinned, running on the arm64 Dart SDK at `/root/tools/dart-sdk`. So
+  `flutter analyze` and `flutter test` run on the phone.
+- `flutter build apk --debug` still runs on GitHub Actions only: Android's
+  `aapt2` and `zipalign` are shipped as x86_64 binaries and there is no arm64
+  build. CI builds the debug APK for every push
+  (`.github/workflows/ci.yml`, Flutter pinned to 3.50.0) and uploads it as the
+  `app-debug-apk` artifact.
 - Memory is tight (~3.5 GB). Do not start heavy or parallel processes.
 
 ## Layout
@@ -55,8 +58,13 @@ docs/                     specs and decisions
 Before committing, run:
 
 ```
-dart format --output=none --set-exit-if-changed lib test
+dart format --output=none --set-exit-if-changed lib test packages
+flutter analyze
+flutter test
+cd packages/holdcourse_domain && dart test
 ```
 
-Formatting must be clean, because CI fails on it. Anything that needs Flutter
-is verified by pushing and reading the CI result.
+Formatting must be clean, because CI fails on it. `flutter analyze` fails if
+the domain package's own dependencies are not installed, so run
+`dart pub get` in `packages/holdcourse_domain` before analysing. Building the
+APK is the only step that still needs CI.
