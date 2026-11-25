@@ -6,3 +6,4 @@ library;
 
 export 'src/attendance.dart';
 export 'src/grades.dart';
+export 'src/timetable.dart';
