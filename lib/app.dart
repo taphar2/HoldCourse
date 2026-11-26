@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'core/db/database.dart';
 import 'core/theme/app_theme.dart';
 import 'features/attendance/attendance_screen.dart';
+import 'features/cats/cat_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/timetable/timetable_screen.dart';
 
@@ -50,10 +51,15 @@ class _AppShellState extends State<_AppShell> {
         1 => AttendanceScreen(
           database: widget.database,
           now: widget.now,
-          onOpenSettings: () => setState(() => _selected = 2),
+          onOpenSettings: () => setState(() => _selected = 3),
           onOpenTimetable: () => setState(() => _selected = 0),
         ),
-        2 => SettingsScreen(database: widget.database, now: widget.now),
+        2 => CatScreen(
+          database: widget.database,
+          onOpenSettings: () => setState(() => _selected = 3),
+          onOpenTimetable: () => setState(() => _selected = 0),
+        ),
+        3 => SettingsScreen(database: widget.database, now: widget.now),
         _ => const SizedBox.shrink(),
       },
       bottomNavigationBar: NavigationBar(
@@ -69,6 +75,10 @@ class _AppShellState extends State<_AppShell> {
           NavigationDestination(
             icon: Icon(LucideIcons.square_check),
             label: 'Attendance',
+          ),
+          NavigationDestination(
+            icon: Icon(LucideIcons.chart_bar),
+            label: 'CATs',
           ),
           NavigationDestination(
             icon: Icon(LucideIcons.settings),

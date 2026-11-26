@@ -10,12 +10,18 @@ class Courses extends Table {
   TextColumn get code => text()();
   TextColumn get title => text()();
   TextColumn get lecturer => text().nullable()();
+  IntColumn get targetPercent => integer().nullable()();
   IntColumn get colorIndex => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get archivedAt => dateTime().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+    'CHECK (target_percent IS NULL OR target_percent BETWEEN 0 AND 100)',
+  ];
 }
 
 /// A recurring class in the student's week.

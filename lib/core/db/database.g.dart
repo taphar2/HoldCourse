@@ -46,6 +46,17 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _targetPercentMeta = const VerificationMeta(
+    'targetPercent',
+  );
+  @override
+  late final GeneratedColumn<int> targetPercent = GeneratedColumn<int>(
+    'target_percent',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _colorIndexMeta = const VerificationMeta(
     'colorIndex',
   );
@@ -86,6 +97,7 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
     code,
     title,
     lecturer,
+    targetPercent,
     colorIndex,
     createdAt,
     archivedAt,
@@ -127,6 +139,15 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
       context.handle(
         _lecturerMeta,
         lecturer.isAcceptableOrUnknown(data['lecturer']!, _lecturerMeta),
+      );
+    }
+    if (data.containsKey('target_percent')) {
+      context.handle(
+        _targetPercentMeta,
+        targetPercent.isAcceptableOrUnknown(
+          data['target_percent']!,
+          _targetPercentMeta,
+        ),
       );
     }
     if (data.containsKey('color_index')) {
@@ -174,6 +195,10 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
         DriftSqlType.string,
         data['${effectivePrefix}lecturer'],
       ),
+      targetPercent: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_percent'],
+      ),
       colorIndex: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}color_index'],
@@ -200,6 +225,7 @@ class Course extends DataClass implements Insertable<Course> {
   final String code;
   final String title;
   final String? lecturer;
+  final int? targetPercent;
   final int colorIndex;
   final DateTime createdAt;
   final DateTime? archivedAt;
@@ -208,6 +234,7 @@ class Course extends DataClass implements Insertable<Course> {
     required this.code,
     required this.title,
     this.lecturer,
+    this.targetPercent,
     required this.colorIndex,
     required this.createdAt,
     this.archivedAt,
@@ -220,6 +247,9 @@ class Course extends DataClass implements Insertable<Course> {
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || lecturer != null) {
       map['lecturer'] = Variable<String>(lecturer);
+    }
+    if (!nullToAbsent || targetPercent != null) {
+      map['target_percent'] = Variable<int>(targetPercent);
     }
     map['color_index'] = Variable<int>(colorIndex);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -237,6 +267,9 @@ class Course extends DataClass implements Insertable<Course> {
       lecturer: lecturer == null && nullToAbsent
           ? const Value.absent()
           : Value(lecturer),
+      targetPercent: targetPercent == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetPercent),
       colorIndex: Value(colorIndex),
       createdAt: Value(createdAt),
       archivedAt: archivedAt == null && nullToAbsent
@@ -255,6 +288,7 @@ class Course extends DataClass implements Insertable<Course> {
       code: serializer.fromJson<String>(json['code']),
       title: serializer.fromJson<String>(json['title']),
       lecturer: serializer.fromJson<String?>(json['lecturer']),
+      targetPercent: serializer.fromJson<int?>(json['targetPercent']),
       colorIndex: serializer.fromJson<int>(json['colorIndex']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       archivedAt: serializer.fromJson<DateTime?>(json['archivedAt']),
@@ -268,6 +302,7 @@ class Course extends DataClass implements Insertable<Course> {
       'code': serializer.toJson<String>(code),
       'title': serializer.toJson<String>(title),
       'lecturer': serializer.toJson<String?>(lecturer),
+      'targetPercent': serializer.toJson<int?>(targetPercent),
       'colorIndex': serializer.toJson<int>(colorIndex),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'archivedAt': serializer.toJson<DateTime?>(archivedAt),
@@ -279,6 +314,7 @@ class Course extends DataClass implements Insertable<Course> {
     String? code,
     String? title,
     Value<String?> lecturer = const Value.absent(),
+    Value<int?> targetPercent = const Value.absent(),
     int? colorIndex,
     DateTime? createdAt,
     Value<DateTime?> archivedAt = const Value.absent(),
@@ -287,6 +323,9 @@ class Course extends DataClass implements Insertable<Course> {
     code: code ?? this.code,
     title: title ?? this.title,
     lecturer: lecturer.present ? lecturer.value : this.lecturer,
+    targetPercent: targetPercent.present
+        ? targetPercent.value
+        : this.targetPercent,
     colorIndex: colorIndex ?? this.colorIndex,
     createdAt: createdAt ?? this.createdAt,
     archivedAt: archivedAt.present ? archivedAt.value : this.archivedAt,
@@ -297,6 +336,9 @@ class Course extends DataClass implements Insertable<Course> {
       code: data.code.present ? data.code.value : this.code,
       title: data.title.present ? data.title.value : this.title,
       lecturer: data.lecturer.present ? data.lecturer.value : this.lecturer,
+      targetPercent: data.targetPercent.present
+          ? data.targetPercent.value
+          : this.targetPercent,
       colorIndex: data.colorIndex.present
           ? data.colorIndex.value
           : this.colorIndex,
@@ -314,6 +356,7 @@ class Course extends DataClass implements Insertable<Course> {
           ..write('code: $code, ')
           ..write('title: $title, ')
           ..write('lecturer: $lecturer, ')
+          ..write('targetPercent: $targetPercent, ')
           ..write('colorIndex: $colorIndex, ')
           ..write('createdAt: $createdAt, ')
           ..write('archivedAt: $archivedAt')
@@ -322,8 +365,16 @@ class Course extends DataClass implements Insertable<Course> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, code, title, lecturer, colorIndex, createdAt, archivedAt);
+  int get hashCode => Object.hash(
+    id,
+    code,
+    title,
+    lecturer,
+    targetPercent,
+    colorIndex,
+    createdAt,
+    archivedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -332,6 +383,7 @@ class Course extends DataClass implements Insertable<Course> {
           other.code == this.code &&
           other.title == this.title &&
           other.lecturer == this.lecturer &&
+          other.targetPercent == this.targetPercent &&
           other.colorIndex == this.colorIndex &&
           other.createdAt == this.createdAt &&
           other.archivedAt == this.archivedAt);
@@ -342,6 +394,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
   final Value<String> code;
   final Value<String> title;
   final Value<String?> lecturer;
+  final Value<int?> targetPercent;
   final Value<int> colorIndex;
   final Value<DateTime> createdAt;
   final Value<DateTime?> archivedAt;
@@ -351,6 +404,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     this.code = const Value.absent(),
     this.title = const Value.absent(),
     this.lecturer = const Value.absent(),
+    this.targetPercent = const Value.absent(),
     this.colorIndex = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.archivedAt = const Value.absent(),
@@ -361,6 +415,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     required String code,
     required String title,
     this.lecturer = const Value.absent(),
+    this.targetPercent = const Value.absent(),
     this.colorIndex = const Value.absent(),
     required DateTime createdAt,
     this.archivedAt = const Value.absent(),
@@ -374,6 +429,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     Expression<String>? code,
     Expression<String>? title,
     Expression<String>? lecturer,
+    Expression<int>? targetPercent,
     Expression<int>? colorIndex,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? archivedAt,
@@ -384,6 +440,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
       if (code != null) 'code': code,
       if (title != null) 'title': title,
       if (lecturer != null) 'lecturer': lecturer,
+      if (targetPercent != null) 'target_percent': targetPercent,
       if (colorIndex != null) 'color_index': colorIndex,
       if (createdAt != null) 'created_at': createdAt,
       if (archivedAt != null) 'archived_at': archivedAt,
@@ -396,6 +453,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     Value<String>? code,
     Value<String>? title,
     Value<String?>? lecturer,
+    Value<int?>? targetPercent,
     Value<int>? colorIndex,
     Value<DateTime>? createdAt,
     Value<DateTime?>? archivedAt,
@@ -406,6 +464,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
       code: code ?? this.code,
       title: title ?? this.title,
       lecturer: lecturer ?? this.lecturer,
+      targetPercent: targetPercent ?? this.targetPercent,
       colorIndex: colorIndex ?? this.colorIndex,
       createdAt: createdAt ?? this.createdAt,
       archivedAt: archivedAt ?? this.archivedAt,
@@ -427,6 +486,9 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     }
     if (lecturer.present) {
       map['lecturer'] = Variable<String>(lecturer.value);
+    }
+    if (targetPercent.present) {
+      map['target_percent'] = Variable<int>(targetPercent.value);
     }
     if (colorIndex.present) {
       map['color_index'] = Variable<int>(colorIndex.value);
@@ -450,6 +512,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
           ..write('code: $code, ')
           ..write('title: $title, ')
           ..write('lecturer: $lecturer, ')
+          ..write('targetPercent: $targetPercent, ')
           ..write('colorIndex: $colorIndex, ')
           ..write('createdAt: $createdAt, ')
           ..write('archivedAt: $archivedAt, ')
@@ -2760,6 +2823,7 @@ typedef $$CoursesTableCreateCompanionBuilder = CoursesCompanion Function({
   required String code,
   required String title,
   Value<String?> lecturer,
+  Value<int?> targetPercent,
   Value<int> colorIndex,
   required DateTime createdAt,
   Value<DateTime?> archivedAt,
@@ -2770,6 +2834,7 @@ typedef $$CoursesTableUpdateCompanionBuilder = CoursesCompanion Function({
   Value<String> code,
   Value<String> title,
   Value<String?> lecturer,
+  Value<int?> targetPercent,
   Value<int> colorIndex,
   Value<DateTime> createdAt,
   Value<DateTime?> archivedAt,
@@ -2881,6 +2946,11 @@ class $$CoursesTableFilterComposer
 
   ColumnFilters<String> get lecturer => $composableBuilder(
     column: $table.lecturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetPercent => $composableBuilder(
+    column: $table.targetPercent,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3029,6 +3099,11 @@ class $$CoursesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get targetPercent => $composableBuilder(
+    column: $table.targetPercent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get colorIndex => $composableBuilder(
     column: $table.colorIndex,
     builder: (column) => ColumnOrderings(column),
@@ -3065,6 +3140,11 @@ class $$CoursesTableAnnotationComposer
 
   GeneratedColumn<String> get lecturer =>
       $composableBuilder(column: $table.lecturer, builder: (column) => column);
+
+  GeneratedColumn<int> get targetPercent => $composableBuilder(
+    column: $table.targetPercent,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get colorIndex => $composableBuilder(
     column: $table.colorIndex,
@@ -3217,6 +3297,7 @@ class $$CoursesTableTableManager
                 Value<String> code = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String?> lecturer = const Value.absent(),
+                Value<int?> targetPercent = const Value.absent(),
                 Value<int> colorIndex = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> archivedAt = const Value.absent(),
@@ -3226,6 +3307,7 @@ class $$CoursesTableTableManager
                 code: code,
                 title: title,
                 lecturer: lecturer,
+                targetPercent: targetPercent,
                 colorIndex: colorIndex,
                 createdAt: createdAt,
                 archivedAt: archivedAt,
@@ -3237,6 +3319,7 @@ class $$CoursesTableTableManager
                 required String code,
                 required String title,
                 Value<String?> lecturer = const Value.absent(),
+                Value<int?> targetPercent = const Value.absent(),
                 Value<int> colorIndex = const Value.absent(),
                 required DateTime createdAt,
                 Value<DateTime?> archivedAt = const Value.absent(),
@@ -3246,6 +3329,7 @@ class $$CoursesTableTableManager
                 code: code,
                 title: title,
                 lecturer: lecturer,
+                targetPercent: targetPercent,
                 colorIndex: colorIndex,
                 createdAt: createdAt,
                 archivedAt: archivedAt,
