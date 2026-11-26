@@ -1,11 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'core/db/database.dart';
 import 'core/theme/app_theme.dart';
-import 'features/home/home_shell.dart';
+import 'features/timetable/timetable_screen.dart';
 
 /// Root of the HoldCourse app.
 class HoldCourseApp extends StatelessWidget {
-  const HoldCourseApp({super.key});
+  const HoldCourseApp({super.key, required this.database});
+
+  final AppDatabase database;
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +18,7 @@ class HoldCourseApp extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      home: const HomeShell(),
+      home: TimetableScreen(database: database),
     );
   }
 }
