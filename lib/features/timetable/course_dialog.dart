@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
-/// What the student typed into the add-course form.
-final class NewCourseDetails {
-  const NewCourseDetails({
+/// What the student typed into the course form.
+final class CourseFormResult {
+  const CourseFormResult({
     required this.code,
     required this.title,
     required this.lecturer,
@@ -13,19 +13,30 @@ final class NewCourseDetails {
   final String lecturer;
 }
 
-/// Asks for the details of a new course. Returns null when cancelled.
-Future<NewCourseDetails?> showAddCourseDialog(BuildContext context) async {
-  final TextEditingController code = TextEditingController();
-  final TextEditingController title = TextEditingController();
-  final TextEditingController lecturer = TextEditingController();
+/// Asks for course details, prefilled when [initial] is given.
+///
+/// Returns null when cancelled. The caller decides whether this is a new
+/// course or an edit; changing an existing course never rewrites attendance.
+Future<CourseFormResult?> showCourseDialog(
+  BuildContext context, {
+  CourseFormResult? initial,
+}) async {
+  final TextEditingController code = TextEditingController(text: initial?.code);
+  final TextEditingController title = TextEditingController(
+    text: initial?.title,
+  );
+  final TextEditingController lecturer = TextEditingController(
+    text: initial?.lecturer,
+  );
   final GlobalKey<FormState> form = GlobalKey<FormState>();
+  final bool editing = initial != null;
 
   try {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Add course'),
+          title: Text(editing ? 'Edit course' : 'Add course'),
           content: SingleChildScrollView(
             child: Form(
               key: form,
@@ -75,7 +86,7 @@ Future<NewCourseDetails?> showAddCourseDialog(BuildContext context) async {
                   Navigator.of(context).pop(true);
                 }
               },
-              child: const Text('Add'),
+              child: Text(editing ? 'Save' : 'Add'),
             ),
           ],
         );
@@ -85,7 +96,7 @@ Future<NewCourseDetails?> showAddCourseDialog(BuildContext context) async {
     if (confirmed != true) {
       return null;
     }
-    return NewCourseDetails(
+    return CourseFormResult(
       code: code.text.trim(),
       title: title.text.trim(),
       lecturer: lecturer.text.trim(),

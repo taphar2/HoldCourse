@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:hold_course/core/db/database.dart';
-import 'package:hold_course/features/timetable/add_course_dialog.dart';
-import 'package:hold_course/features/timetable/add_slot_dialog.dart';
+import 'package:hold_course/features/timetable/course_dialog.dart';
+import 'package:hold_course/features/timetable/slot_dialog.dart';
 import 'package:hold_course/features/timetable/time_labels.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
@@ -19,7 +19,7 @@ class TimetableScreen extends StatefulWidget {
 
 class _TimetableScreenState extends State<TimetableScreen> {
   Future<void> _addCourse(BuildContext context) async {
-    final NewCourseDetails? details = await showAddCourseDialog(context);
+    final CourseFormResult? details = await showCourseDialog(context);
     if (details == null || !mounted) {
       return;
     }
@@ -36,8 +36,79 @@ class _TimetableScreenState extends State<TimetableScreen> {
         );
   }
 
+  Future<void> _editCourse(BuildContext context, Course course) async {
+    final CourseFormResult? details = await showCourseDialog(
+      context,
+      initial: CourseFormResult(
+        code: course.code,
+        title: course.title,
+        lecturer: course.lecturer ?? '',
+      ),
+    );
+    if (details == null || !mounted) {
+      return;
+    }
+    await (widget.database.update(
+      widget.database.courses,
+    )..where((row) => row.id.equals(course.id))).write(
+      CoursesCompanion(
+        code: Value(details.code),
+        title: Value(details.title),
+        lecturer: Value(details.lecturer.isEmpty ? null : details.lecturer),
+      ),
+    );
+  }
+
+  Future<void> _toggleArchived(BuildContext context, Course course) async {
+    final bool archive = course.archivedAt == null;
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(archive ? 'Archive course?' : 'Restore course?'),
+          content: Text(
+            archive
+                ? 'Its classes stay on the timetable, but it will not be '
+                      'offered when adding a new class.'
+                : 'The course will be available for new classes again.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(archive ? 'Archive' : 'Restore'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true) {
+      return;
+    }
+    await (widget.database.update(
+      widget.database.courses,
+    )..where((row) => row.id.equals(course.id))).write(
+      CoursesCompanion(archivedAt: Value(archive ? DateTime.now() : null)),
+    );
+  }
+
+  List<Course> _selectableCourses(List<Course> courses, [String? includeId]) {
+    return courses
+        .where(
+          (Course course) =>
+              course.archivedAt == null || course.id == includeId,
+        )
+        .toList();
+  }
+
   Future<void> _addSlot(BuildContext context, List<Course> courses) async {
-    final NewSlotDetails? details = await showAddSlotDialog(context, courses);
+    final SlotFormResult? details = await showSlotDialog(
+      context,
+      _selectableCourses(courses),
+    );
     if (details == null || !mounted) {
       return;
     }
@@ -53,6 +124,38 @@ class _TimetableScreenState extends State<TimetableScreen> {
             room: Value(details.room.isEmpty ? null : details.room),
           ),
         );
+  }
+
+  Future<void> _editSlot(
+    BuildContext context,
+    List<Course> courses,
+    WeeklySlot slot,
+  ) async {
+    final SlotFormResult? details = await showSlotDialog(
+      context,
+      _selectableCourses(courses, slot.courseId),
+      initial: SlotFormResult(
+        courseId: slot.courseId,
+        weekday: slot.weekday,
+        startMinute: slot.startMinute,
+        endMinute: slot.endMinute,
+        room: slot.room ?? '',
+      ),
+    );
+    if (details == null || !mounted) {
+      return;
+    }
+    await (widget.database.update(
+      widget.database.weeklySlots,
+    )..where((row) => row.id.equals(slot.id))).write(
+      WeeklySlotsCompanion(
+        courseId: Value(details.courseId),
+        weekday: Value(details.weekday),
+        startMinute: Value(details.startMinute),
+        endMinute: Value(details.endMinute),
+        room: Value(details.room.isEmpty ? null : details.room),
+      ),
+    );
   }
 
   Future<void> _deleteSlot(BuildContext context, WeeklySlot slot) async {
@@ -83,6 +186,60 @@ class _TimetableScreenState extends State<TimetableScreen> {
     }
   }
 
+  Future<void> _showCourses(BuildContext context, List<Course> courses) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+                  child: Text(
+                    'Courses',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                for (final Course course in courses)
+                  ListTile(
+                    title: Text('${course.code} · ${course.title}'),
+                    subtitle: Text(
+                      course.archivedAt == null ? 'Active' : 'Archived',
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          tooltip: 'Edit course',
+                          icon: const Icon(LucideIcons.pencil),
+                          onPressed: () => _editCourse(context, course),
+                        ),
+                        IconButton(
+                          tooltip: course.archivedAt == null
+                              ? 'Archive course'
+                              : 'Restore course',
+                          icon: Icon(
+                            course.archivedAt == null
+                                ? LucideIcons.archive
+                                : LucideIcons.archive_arrow_up,
+                          ),
+                          onPressed: () => _toggleArchived(context, course),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Course>>(
@@ -93,6 +250,11 @@ class _TimetableScreenState extends State<TimetableScreen> {
           appBar: AppBar(
             title: const Text('HoldCourse'),
             actions: [
+              IconButton(
+                tooltip: 'Courses',
+                icon: const Icon(LucideIcons.ellipsis),
+                onPressed: () => _showCourses(context, courses),
+              ),
               IconButton(
                 tooltip: 'Add course',
                 icon: const Icon(LucideIcons.plus),
@@ -189,10 +351,23 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 '${formatMinutes(context, slot.endMinute)}'
                 '${(slot.room ?? '').isEmpty ? '' : ' · ${slot.room}'}',
               ),
-              trailing: IconButton(
-                tooltip: 'Delete class',
-                icon: Icon(LucideIcons.trash, color: theme.colorScheme.error),
-                onPressed: () => _deleteSlot(context, slot),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: 'Edit class',
+                    icon: const Icon(LucideIcons.pencil),
+                    onPressed: () => _editSlot(context, courses, slot),
+                  ),
+                  IconButton(
+                    tooltip: 'Delete class',
+                    icon: Icon(
+                      LucideIcons.trash,
+                      color: theme.colorScheme.error,
+                    ),
+                    onPressed: () => _deleteSlot(context, slot),
+                  ),
+                ],
               ),
             ),
         ],

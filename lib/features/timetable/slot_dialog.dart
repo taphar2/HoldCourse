@@ -3,9 +3,9 @@ import 'package:hold_course/core/db/database.dart';
 import 'package:hold_course/features/timetable/time_labels.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// What the student chose in the add-class form.
-final class NewSlotDetails {
-  const NewSlotDetails({
+/// What the student chose in the class form.
+final class SlotFormResult {
+  const SlotFormResult({
     required this.courseId,
     required this.weekday,
     required this.startMinute,
@@ -20,36 +20,52 @@ final class NewSlotDetails {
   final String room;
 }
 
-/// Asks for a recurring class. Returns null when cancelled.
-Future<NewSlotDetails?> showAddSlotDialog(
+/// Asks for a recurring class, prefilled when [initial] is given.
+///
+/// Returns null when cancelled.
+Future<SlotFormResult?> showSlotDialog(
   BuildContext context,
-  List<Course> courses,
-) async {
+  List<Course> courses, {
+  SlotFormResult? initial,
+}) async {
   if (courses.isEmpty) {
     return null;
   }
-  return showDialog<NewSlotDetails>(
+  return showDialog<SlotFormResult>(
     context: context,
-    builder: (BuildContext context) => _AddSlotDialog(courses: courses),
+    builder: (BuildContext context) =>
+        _SlotDialog(courses: courses, initial: initial),
   );
 }
 
-class _AddSlotDialog extends StatefulWidget {
-  const _AddSlotDialog({required this.courses});
+class _SlotDialog extends StatefulWidget {
+  const _SlotDialog({required this.courses, this.initial});
 
   final List<Course> courses;
+  final SlotFormResult? initial;
 
   @override
-  State<_AddSlotDialog> createState() => _AddSlotDialogState();
+  State<_SlotDialog> createState() => _SlotDialogState();
 }
 
-class _AddSlotDialogState extends State<_AddSlotDialog> {
-  late String _courseId = widget.courses.first.id;
-  int _weekday = DateTime.monday;
-  TimeOfDay _start = const TimeOfDay(hour: 8, minute: 0);
-  TimeOfDay _end = const TimeOfDay(hour: 9, minute: 0);
+class _SlotDialogState extends State<_SlotDialog> {
+  late String _courseId = widget.initial?.courseId ?? widget.courses.first.id;
+  late int _weekday = widget.initial?.weekday ?? DateTime.monday;
+  late TimeOfDay _start = _timeOf(widget.initial?.startMinute, 8);
+  late TimeOfDay _end = _timeOf(widget.initial?.endMinute, 9);
+  late final TextEditingController _room;
   String? _error;
-  final TextEditingController _room = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _room = TextEditingController(text: widget.initial?.room ?? '');
+  }
+
+  TimeOfDay _timeOf(int? minutes, int defaultHour) {
+    final int value = minutes ?? defaultHour * 60;
+    return TimeOfDay(hour: value ~/ 60, minute: value % 60);
+  }
 
   @override
   void dispose() {
@@ -83,7 +99,7 @@ class _AddSlotDialogState extends State<_AddSlotDialog> {
       return;
     }
     Navigator.of(context).pop(
-      NewSlotDetails(
+      SlotFormResult(
         courseId: _courseId,
         weekday: _weekday,
         startMinute: startMinute,
@@ -96,8 +112,9 @@ class _AddSlotDialogState extends State<_AddSlotDialog> {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
+    final bool editing = widget.initial != null;
     return AlertDialog(
-      title: const Text('Add class'),
+      title: Text(editing ? 'Edit class' : 'Add class'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -178,7 +195,7 @@ class _AddSlotDialogState extends State<_AddSlotDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        FilledButton(onPressed: _save, child: const Text('Add')),
+        FilledButton(onPressed: _save, child: Text(editing ? 'Save' : 'Add')),
       ],
     );
   }
