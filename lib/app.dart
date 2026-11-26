@@ -46,7 +46,7 @@ class _AppShellState extends State<_AppShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: switch (_selected) {
-        0 => TimetableScreen(database: widget.database),
+        0 => TimetableScreen(database: widget.database, now: widget.now),
         1 => AttendanceScreen(
           database: widget.database,
           now: widget.now,

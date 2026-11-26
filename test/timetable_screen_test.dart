@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hold_course/app.dart';
 import 'package:hold_course/core/db/database.dart';
+import 'package:holdcourse_domain/holdcourse_domain.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
@@ -60,6 +62,54 @@ void main() {
     expect(find.textContaining('CS 310'), findsOneWidget);
     expect(find.textContaining('08:00'), findsOneWidget);
     expect(find.textContaining('Room 201'), findsOneWidget);
+    await _unmount(tester);
+  });
+
+  testWidgets('a weekly class can be cancelled on one date only', (
+    tester,
+  ) async {
+    await database
+        .into(database.courses)
+        .insert(
+          CoursesCompanion.insert(
+            id: 'course-1',
+            code: 'CS 310',
+            title: 'Database Systems',
+            createdAt: DateTime(2026, 11, 16),
+          ),
+        );
+    await database
+        .into(database.weeklySlots)
+        .insert(
+          WeeklySlotsCompanion.insert(
+            id: 'slot-1',
+            courseId: 'course-1',
+            weekday: DateTime.monday,
+            startMinute: 480,
+            endMinute: 600,
+          ),
+        );
+
+    await tester.pumpWidget(
+      HoldCourseApp(database: database, now: () => DateTime(2026, 11, 16, 18)),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(LucideIcons.calendar_clock));
+    await tester.pumpAndSettle();
+
+    expect(find.text('One-off class change'), findsOneWidget);
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    final List<SlotChange> changes = await database
+        .select(database.slotChanges)
+        .get();
+    expect(changes, hasLength(1));
+    expect(changes.single.kind, SlotChangeKind.cancelled);
+    expect(changes.single.date, DateTime(2026, 11, 23));
+    expect(changes.single.slotId, 'slot-1');
+    expect(find.text('Upcoming changes'), findsOneWidget);
+    expect(find.textContaining('Cancelled · CS 310'), findsOneWidget);
     await _unmount(tester);
   });
 }
