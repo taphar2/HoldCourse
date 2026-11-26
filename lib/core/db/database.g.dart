@@ -496,7 +496,6 @@ class $WeeklySlotsTable extends WeeklySlots
     'weekday',
     aliasedName,
     false,
-    check: () => ComparableExpr(weekday).isBetweenValues(1, 7),
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
@@ -508,7 +507,6 @@ class $WeeklySlotsTable extends WeeklySlots
     'start_minute',
     aliasedName,
     false,
-    check: () => ComparableExpr(startMinute).isBiggerOrEqualValue(0),
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
@@ -1827,7 +1825,6 @@ class $CatEntriesTable extends CatEntries
     'total',
     aliasedName,
     false,
-    check: () => ComparableExpr(total).isBiggerThanValue(0),
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
@@ -1837,7 +1834,6 @@ class $CatEntriesTable extends CatEntries
     'weight',
     aliasedName,
     false,
-    check: () => ComparableExpr(weight).isBiggerThanValue(0),
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
@@ -2239,7 +2235,7 @@ class $AppSettingsTable extends AppSettings
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultValue: const Constant(0),
+    clientDefault: () => 0,
   );
   static const VerificationMeta _semesterStartMeta = const VerificationMeta(
     'semesterStart',
