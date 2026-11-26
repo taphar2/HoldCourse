@@ -6,6 +6,8 @@ import 'package:hold_course/core/db/database.dart';
 import 'package:holdcourse_domain/holdcourse_domain.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'support/fake_auth.dart';
+
 void main() {
   late AppDatabase database;
 
@@ -51,7 +53,11 @@ void main() {
         );
 
     await tester.pumpWidget(
-      HoldCourseApp(database: database, now: () => DateTime(2026, 11, 18, 18)),
+      HoldCourseApp(
+        auth: signedInAuth(),
+        database: database,
+        now: () => DateTime(2026, 11, 18, 18),
+      ),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(LucideIcons.square_check));
@@ -83,7 +89,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      HoldCourseApp(database: database, now: () => DateTime(2026, 11, 18, 18)),
+      HoldCourseApp(
+        auth: signedInAuth(),
+        database: database,
+        now: () => DateTime(2026, 11, 18, 18),
+      ),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(LucideIcons.square_check));

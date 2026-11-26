@@ -14,12 +14,17 @@ The student controls their own data. There is no third-party monitoring.
 
 Builds happen on GitHub Actions so no local Flutter install is required:
 
-1. Push to any branch.
-2. Open the Actions run for that commit.
-3. Download the `app-debug-apk` artifact and install it on the phone.
+1. Add repository secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY` so sign-in
+   works in the built app.
+2. Push to any branch.
+3. Open the Actions run for that commit.
+4. Download the `app-debug-apk` artifact and install it on the phone.
 
-The workflow runs `flutter analyze`, `flutter test` and `flutter build apk --debug`.
+The workflow runs `flutter analyze`, `flutter test`, the domain package tests
+and `flutter build apk --debug`. The `Build AAB` workflow can be run manually
+to produce a debug-signed bundle; it is not a Play Store upload key.
 
 ## Status
 
-Early scaffolding. See `docs/SPEC.md` for the full scope.
+Mode 1 (self-assessment) MVP: account sign-in, timetable, attendance and CAT
+tracking. See `docs/SPEC.md` for the full scope.

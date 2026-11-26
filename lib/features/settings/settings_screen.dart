@@ -9,9 +9,15 @@ import 'package:material_ui/material_ui.dart';
 /// the CAT/exam split are locked once setup is saved; the threshold stays
 /// editable. See `docs/DECISIONS.md`.
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key, required this.database, this.now});
+  const SettingsScreen({
+    super.key,
+    required this.database,
+    required this.onSignOut,
+    this.now,
+  });
 
   final AppDatabase database;
+  final Future<void> Function() onSignOut;
   final DateTime Function()? now;
 
   @override
@@ -149,7 +155,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         final bool locked =
             settings.isNotEmpty && settings.first.onboardingComplete;
         return Scaffold(
-          appBar: AppBar(title: const Text('Semester settings')),
+          appBar: AppBar(
+            title: const Text('Semester settings'),
+            actions: [
+              IconButton(
+                key: const Key('sign-out-button'),
+                onPressed: widget.onSignOut,
+                icon: const Icon(LucideIcons.log_out),
+                tooltip: 'Sign out',
+              ),
+            ],
+          ),
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),

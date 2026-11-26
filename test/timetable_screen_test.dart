@@ -7,6 +7,8 @@ import 'package:hold_course/core/db/database.dart';
 import 'package:holdcourse_domain/holdcourse_domain.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'support/fake_auth.dart';
+
 void main() {
   late AppDatabase database;
 
@@ -19,7 +21,9 @@ void main() {
   });
 
   testWidgets('a new install shows an empty timetable', (tester) async {
-    await tester.pumpWidget(HoldCourseApp(database: database));
+    await tester.pumpWidget(
+      HoldCourseApp(auth: signedInAuth(), database: database),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('HoldCourse'), findsOneWidget);
@@ -54,7 +58,9 @@ void main() {
           ),
         );
 
-    await tester.pumpWidget(HoldCourseApp(database: database));
+    await tester.pumpWidget(
+      HoldCourseApp(auth: signedInAuth(), database: database),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('No timetable yet'), findsNothing);
@@ -91,7 +97,11 @@ void main() {
         );
 
     await tester.pumpWidget(
-      HoldCourseApp(database: database, now: () => DateTime(2026, 11, 16, 18)),
+      HoldCourseApp(
+        auth: signedInAuth(),
+        database: database,
+        now: () => DateTime(2026, 11, 16, 18),
+      ),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(LucideIcons.calendar_clock));

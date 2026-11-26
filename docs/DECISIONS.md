@@ -6,6 +6,19 @@ the decision wins and the line is quoted here.
 
 ---
 
+## 2026-11-26 — Supabase config and debug-signed bundle
+
+**Decided by:** project owner.
+
+- Sign-up/login is wired through Supabase. The project URL and anon key are
+  injected with `--dart-define` from GitHub repository secrets, never committed.
+- Until those secrets exist, the app shows a configuration error instead of
+  letting students into local-only data.
+- For now the manually built AAB is debug-signed. A Play Store upload key is
+  not being generated or requested yet.
+
+---
+
 ## 2026-11-17 — Flutter runs locally on the phone
 
 **Decided by:** project owner. Supersedes "Tooling on the phone" below, where

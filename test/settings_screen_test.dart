@@ -21,6 +21,7 @@ void main() {
       MaterialApp(
         home: SettingsScreen(
           database: database,
+          onSignOut: () async {},
           now: () => DateTime(2026, 11, 16),
         ),
       ),
@@ -63,6 +64,7 @@ void main() {
       MaterialApp(
         home: SettingsScreen(
           database: database,
+          onSignOut: () async {},
           now: () => DateTime(2026, 11, 16),
         ),
       ),
@@ -97,6 +99,7 @@ void main() {
       MaterialApp(
         home: SettingsScreen(
           database: database,
+          onSignOut: () async {},
           now: () => DateTime(2026, 11, 16),
         ),
       ),

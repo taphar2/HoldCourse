@@ -6,6 +6,8 @@ import 'package:hold_course/app.dart';
 import 'package:hold_course/core/db/database.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'support/fake_auth.dart';
+
 void main() {
   late AppDatabase database;
 
@@ -41,7 +43,9 @@ void main() {
   }
 
   Future<void> openCats(WidgetTester tester) async {
-    await tester.pumpWidget(HoldCourseApp(database: database));
+    await tester.pumpWidget(
+      HoldCourseApp(auth: signedInAuth(), database: database),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(LucideIcons.chart_bar));
     await tester.pumpAndSettle();
