@@ -28,8 +28,8 @@ class WeeklySlots extends Table {
       text().references(Courses, #id, onDelete: KeyAction.cascade)();
 
   /// 1 = Monday through 7 = Sunday, matching [DateTime.weekday].
-  IntColumn get weekday => integer().check(weekday.isBetweenValues(1, 7))();
-  IntColumn get startMinute => integer().check(startMinute.isBiggerOrEqualValue(0))();
+  IntColumn get weekday => integer()();
+  IntColumn get startMinute => integer()();
   IntColumn get endMinute => integer()();
   TextColumn get room => text().nullable()();
 
@@ -37,7 +37,11 @@ class WeeklySlots extends Table {
   Set<Column<Object>> get primaryKey => {id};
 
   @override
-  List<String> get customConstraints => ['CHECK (end_minute > start_minute)'];
+  List<String> get customConstraints => [
+    'CHECK (weekday BETWEEN 1 AND 7)',
+    'CHECK (start_minute >= 0)',
+    'CHECK (end_minute > start_minute)',
+  ];
 }
 
 /// A change that applies to one date only.
@@ -48,8 +52,11 @@ class SlotChanges extends Table {
 
   /// The slot being cancelled or moved. Null for an [SlotChangeKind.added]
   /// session, which exists only on this date.
-  TextColumn get slotId =>
-      text().nullable().references(WeeklySlots, #id, onDelete: KeyAction.cascade)();
+  TextColumn get slotId => text().nullable().references(
+    WeeklySlots,
+    #id,
+    onDelete: KeyAction.cascade,
+  )();
   DateTimeColumn get date => dateTime()();
   IntColumn get kind => intEnum<SlotChangeKind>()();
   IntColumn get startMinute => integer().nullable()();
@@ -86,21 +93,25 @@ class CatEntries extends Table {
       text().references(Courses, #id, onDelete: KeyAction.cascade)();
   TextColumn get title => text()();
   RealColumn get marks => real()();
-  RealColumn get total => real().check(total.isBiggerThanValue(0))();
-  RealColumn get weight => real().check(weight.isBiggerThanValue(0))();
+  RealColumn get total => real()();
+  RealColumn get weight => real()();
   DateTimeColumn get date => dateTime().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
 
   @override
-  List<String> get customConstraints => ['CHECK (marks >= 0 AND marks <= total)'];
+  List<String> get customConstraints => [
+    'CHECK (total > 0)',
+    'CHECK (weight > 0)',
+    'CHECK (marks >= 0 AND marks <= total)',
+  ];
 }
 
 /// The single row holding semester dates and marking rules.
 class AppSettings extends Table {
   /// Always 0: the check constraint keeps this table to one row.
-  IntColumn get id => integer().withDefault(const Constant(0))();
+  IntColumn get id => integer().clientDefault(() => 0)();
   DateTimeColumn get semesterStart => dateTime()();
   DateTimeColumn get semesterEnd => dateTime()();
   IntColumn get attendanceThreshold =>
