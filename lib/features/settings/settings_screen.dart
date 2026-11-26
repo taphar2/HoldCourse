@@ -8,11 +8,7 @@ import 'package:material_ui/material_ui.dart';
 /// Until sign-up exists, this is where the student enters the dates that
 /// attendance needs in order to know which classes have already happened.
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({
-    super.key,
-    required this.database,
-    this.now,
-  });
+  const SettingsScreen({super.key, required this.database, this.now});
 
   final AppDatabase database;
   final DateTime Function()? now;
@@ -96,8 +92,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           );
     } else {
-      await (widget.database.update(widget.database.appSettings)
-            ..where((row) => row.id.equals(0))).write(companion);
+      await (widget.database.update(
+        widget.database.appSettings,
+      )..where((row) => row.id.equals(0))).write(companion);
     }
   }
 
@@ -112,10 +109,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return StreamBuilder<List<AppSetting>>(
       stream: widget.database.select(widget.database.appSettings).watch(),
-      builder: (
-        BuildContext context,
-        AsyncSnapshot<List<AppSetting>> snapshot,
-      ) {
+      builder: (BuildContext context, AsyncSnapshot<List<AppSetting>> snapshot) {
         final List<AppSetting> settings = snapshot.data ?? const [];
         if (!_loaded && settings.isNotEmpty) {
           _start = settings.first.semesterStart;

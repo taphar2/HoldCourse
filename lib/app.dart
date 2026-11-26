@@ -3,16 +3,13 @@ import 'package:material_ui/material_ui.dart';
 
 import 'core/db/database.dart';
 import 'core/theme/app_theme.dart';
+import 'features/attendance/attendance_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/timetable/timetable_screen.dart';
 
 /// Root of the HoldCourse app.
 class HoldCourseApp extends StatelessWidget {
-  const HoldCourseApp({
-    super.key,
-    required this.database,
-    this.now,
-  });
+  const HoldCourseApp({super.key, required this.database, this.now});
 
   final AppDatabase database;
 
@@ -50,7 +47,13 @@ class _AppShellState extends State<_AppShell> {
     return Scaffold(
       body: switch (_selected) {
         0 => TimetableScreen(database: widget.database),
-        1 => SettingsScreen(database: widget.database, now: widget.now),
+        1 => AttendanceScreen(
+          database: widget.database,
+          now: widget.now,
+          onOpenSettings: () => setState(() => _selected = 2),
+          onOpenTimetable: () => setState(() => _selected = 0),
+        ),
+        2 => SettingsScreen(database: widget.database, now: widget.now),
         _ => const SizedBox.shrink(),
       },
       bottomNavigationBar: NavigationBar(
@@ -62,6 +65,10 @@ class _AppShellState extends State<_AppShell> {
           NavigationDestination(
             icon: Icon(LucideIcons.calendar_days),
             label: 'Timetable',
+          ),
+          NavigationDestination(
+            icon: Icon(LucideIcons.square_check),
+            label: 'Attendance',
           ),
           NavigationDestination(
             icon: Icon(LucideIcons.settings),
